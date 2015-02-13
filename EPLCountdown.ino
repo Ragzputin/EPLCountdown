@@ -77,8 +77,20 @@ void setup(){
 }
 
 void loop(){
+  client_ops();
   
-  if (client.available()) {
+  if(lcdprintFlag == 1){
+    lcd_text = "Test On";
+    delay(1000);
+  } else {
+    lcd_text = "";
+  }
+  lcd.setCursor(0,0);
+  lcd.print(lcd_text);
+}
+
+void client_ops(){
+    if (client.available()) {
     char c = client.read();
     Serial.print(c);
     
@@ -124,13 +136,6 @@ void loop(){
     delay(200);
     Serial.println();
   }
-  
-  
-  if(lcdprintFlag == 1){
-    lcd_text = "Test On";
-    delay(1000);
-  }
-  
 }
 
 void recordMessage(char message){
