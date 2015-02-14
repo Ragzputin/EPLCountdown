@@ -26,8 +26,10 @@ int quoteFlag = 0;
 int datetimeFlag = 0;
 int recordFlag = 0;
 int countdownFlag = 0;
+int cstopFlag = 0;
 
 int len = sizeof(msg) / sizeof(msg[0]);
+long days, hrs, mins, sec, rem1, rem2;
 
 WiFlyClient client("api.football-data.org", 80);
 long current_time;
@@ -115,13 +117,14 @@ void loop(){
     
   }
   
-  if(!client.connected()){
+  if(!client.connected() && cstopFlag == 0){
     delay(100);
     client.flush();
     client.stop();
     Serial.println();
     Serial.println("Disconnected.");
     Serial.println();
+    cstopFlag = 1;
     //while(1){}
   }
   
@@ -155,18 +158,18 @@ void checkAction(){
     long timediff; //time diff between current time and game time in the future
     timediff = gametime - current_time;
     Serial.println(timediff);
-
-    long days, hrs, mins, sec, rem1, rem2;
-    days = timediff / 86400;
-    rem1 = timediff % 86400;
-    hrs = rem1 / 3600;
-    rem2 = rem1 % 3600;
-    mins = rem2 / 60;
-    sec = rem2 % 60;
+    
+    days = 2;//timediff / 86400;
+    rem1 = 0;//timediff % 86400;
+    hrs = 1;//rem1 / 3600;
+    rem2 = 0;//rem1 % 3600;
+    mins = 1;//rem2 / 60;
+    sec = 20;//rem2 % 60;
     
 }
 
 void countdown(){
+  lcd.setCursor(0,0);
   if(days < 10){
     lcd.print("0");
   }
@@ -177,5 +180,23 @@ void countdown(){
   lcd.print(":");
   lcd.print(mins);
   lcd.print(":");
-  lcd.print(sec--,DEC);
+  lcd.print(sec--);
+  delay(1000);
+  
+  if(sec < 10){
+    lcd.setCursor(10,0);
+    lcd.print("-");
+    lcd.setCursor(0,0);
+  }
+  
+  if(sec == 0){
+    lcd.print(mins--);
+    sec = 59;
+  } else if(mins == 0){
+    lcd.print(hrs--);
+    mins = 59;
+  } else if(hrs == 0){
+    lcd.print(days--);
+    hrs = 23;
+  }
 }
