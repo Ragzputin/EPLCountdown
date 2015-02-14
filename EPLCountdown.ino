@@ -18,15 +18,15 @@
 
 LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 
-char msg[100];
+char msg[19];
 int letterCount = 0;
 int fixFlag = 0;
 int colonFlag = 0;
 int quoteFlag = 0;
 int datetimeFlag = 0;
-int lcdprintFlag = 0;
+int recordFlag = 0;
 
-String lcd_text = "Test";
+int len = sizeof(msg) / sizeof(msg[0]);
 
 WiFlyClient client("api.football-data.org", 80);
 long current_time;
@@ -39,9 +39,6 @@ void setup(){
   lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
   lcd.setBacklight(HIGH);
   lcd.home ();                   // go home
-  
-  lcd.print("Loading...");
-  
   
   //Begin WiFly and Serial
   WiFly.begin();
@@ -58,8 +55,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n5");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n5");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -81,13 +78,15 @@ void loop(){
     char c = client.read();
     Serial.print(c);
     
-    if(datetimeFlag == 1 && c != 'Z'){
+    if(datetimeFlag == 1 && letterCount < len){
       recordMessage(c);
+      if(letterCount == len){
+        recordFlag = 1;
+      }
     }
     
-    if(c == '\n' && !client.available() && datetimeFlag == 1){
+    if(c == '\n' && !client.available() && recordFlag == 1){
       checkAction();
-      lcdprintFlag = 1;
     }
     
     if(c == '['){
@@ -120,10 +119,9 @@ void loop(){
     client.stop();
     Serial.println();
     Serial.println("Disconnected.");
-    delay(200);
     Serial.println();
+    while(1){}
   }
-  
   
 }
 
@@ -134,7 +132,7 @@ void recordMessage(char message){
 }
 
 void checkAction(){
-   
+    
     TimeElements tm; //create a TimeElements variable
                     //for conversion to time_t variable
     
@@ -153,6 +151,7 @@ void checkAction(){
     
     Serial.println(timediff);
     
+    lcd.print(timediff);
     //float tdiff_hrs;
     //tdiff_hrs = float(timediff) / 3600;
 
