@@ -125,11 +125,6 @@ void loop(){
   }
   
   
-  if(lcdprintFlag == 1){
-    lcd_text = "Test On";
-    delay(1000);
-  }
-  
 }
 
 void recordMessage(char message){
