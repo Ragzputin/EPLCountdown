@@ -25,7 +25,6 @@ int colonFlag = 0;
 int quoteFlag = 0;
 int datetimeFlag = 0;
 int lcdprintFlag = 0;
-long hr_diff = 0;
 
 String lcd_text = "Test";
 
@@ -87,7 +86,7 @@ void loop(){
     }
     
     if(c == '\n' && !client.available() && datetimeFlag == 1){
-      hr_diff = checkAction();
+      checkAction();
       lcdprintFlag = 1;
     }
     
@@ -139,7 +138,7 @@ void recordMessage(char message){
   delay(10);
 }
 
-long checkAction(){
+void checkAction(){
    
     TimeElements tm; //create a TimeElements variable
                     //for conversion to time_t variable
@@ -159,8 +158,7 @@ long checkAction(){
     
     Serial.println(timediff);
     
-    float tdiff_hrs;
-    tdiff_hrs = float(timediff) / 3600;
-    
-    return timediff;
+    //float tdiff_hrs;
+    //tdiff_hrs = float(timediff) / 3600;
+
 }
