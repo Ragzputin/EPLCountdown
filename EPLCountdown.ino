@@ -25,14 +25,13 @@ int colonFlag = 0;
 int quoteFlag = 0;
 int datetimeFlag = 0;
 int lcdprintFlag = 0;
-long hr_diff = 0;
-
-String lcd_text = "Test";
+int n = 1;
 
 WiFlyClient client("api.football-data.org", 80);
 long current_time;
 
 void setup(){
+
   
   //Begin LCD
   lcd.begin (16,2);
@@ -40,9 +39,6 @@ void setup(){
   lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
   lcd.setBacklight(HIGH);
   lcd.home ();                   // go home
-  
-  lcd.print("Loading...");
-  
   
   //Begin WiFly and Serial
   WiFly.begin();
@@ -55,7 +51,9 @@ void setup(){
       // Hang on failure.
     }
   } 
+  
   current_time = WiFly.getTime();
+  
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
@@ -70,26 +68,24 @@ void setup(){
     client.println("Connection: close");
     Serial.println("Connection: close");
     client.println();
+    delay(100);
+    client_ops();
   } else{
     Serial.println("connection failed");
   }
-
+  
 }
 
 void loop(){
-  client_ops();
-  
-  if(lcdprintFlag == 1){
-    lcd_text = "Test On";
-    delay(1000);
-  } else {
-    lcd_text = "";
-  }
-  lcd.setCursor(0,0);
-  lcd.print(lcd_text);
+  Serial.println("Entered the loop");
+  delay(1000);
+  //lcd.home();
+  lcd.print (n++, DEC);
+  delay(200);
 }
 
 void client_ops(){
+    while(client.connected()){
     if (client.available()) {
     char c = client.read();
     Serial.print(c);
@@ -99,8 +95,8 @@ void client_ops(){
     }
     
     if(c == '\n' && !client.available() && datetimeFlag == 1){
-      hr_diff = checkAction();
-      lcdprintFlag = 1;
+      checkAction();
+      Serial.println("Exited checkAction");
     }
     
     if(c == '['){
@@ -124,17 +120,14 @@ void client_ops(){
         datetimeFlag = 1;
       }
     }
-    
+
+  }
   }
   
-  if(!client.connected()){
-    delay(100);
+  if(!client.available()){
     client.flush();
     client.stop();
-    Serial.println();
-    Serial.println("Disconnected.");
-    delay(200);
-    Serial.println();
+    Serial.println("Disconnected");
   }
 }
 
@@ -144,7 +137,7 @@ void recordMessage(char message){
   delay(10);
 }
 
-long checkAction(){
+void checkAction(){
    
     TimeElements tm; //create a TimeElements variable
                     //for conversion to time_t variable
@@ -162,10 +155,8 @@ long checkAction(){
     long timediff; //time diff between current time and game time in the future
     timediff = gametime - current_time;
     
-    Serial.println(timediff);
-    
     float tdiff_hrs;
     tdiff_hrs = float(timediff) / 3600;
     
-    return timediff;
+    Serial.println(timediff);
 }
