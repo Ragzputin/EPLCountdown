@@ -25,6 +25,7 @@ int colonFlag = 0;
 int quoteFlag = 0;
 int datetimeFlag = 0;
 int recordFlag = 0;
+int countdownFlag = 0;
 
 int len = sizeof(msg) / sizeof(msg[0]);
 
@@ -87,6 +88,7 @@ void loop(){
     
     if(c == '\n' && !client.available() && recordFlag == 1){
       checkAction();
+      countdownFlag = 1;
     }
     
     if(c == '['){
@@ -120,7 +122,11 @@ void loop(){
     Serial.println();
     Serial.println("Disconnected.");
     Serial.println();
-    while(1){}
+    //while(1){}
+  }
+  
+  if(countdownFlag == 1){
+    countdown();
   }
   
 }
@@ -158,16 +164,18 @@ void checkAction(){
     mins = rem2 / 60;
     sec = rem2 % 60;
     
-    if(days < 10){
-      lcd.print("0");
-    }
-      
-    lcd.print(days);
-    lcd.print(":");
-    lcd.print(hrs);
-    lcd.print(":");
-    lcd.print(mins);
-    lcd.print(":");
-    lcd.print(sec);
+}
 
+void countdown(){
+  if(days < 10){
+    lcd.print("0");
+  }
+    
+  lcd.print(days);
+  lcd.print(":");
+  lcd.print(hrs);
+  lcd.print(":");
+  lcd.print(mins);
+  lcd.print(":");
+  lcd.print(sec--,DEC);
 }
