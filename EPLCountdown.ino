@@ -148,11 +148,26 @@ void checkAction(){
 
     long timediff; //time diff between current time and game time in the future
     timediff = gametime - current_time;
-    
     Serial.println(timediff);
+
+    long days, hrs, mins, sec, rem1, rem2;
+    days = timediff / 86400;
+    rem1 = timediff % 86400;
+    hrs = rem1 / 3600;
+    rem2 = rem1 % 3600;
+    mins = rem2 / 60;
+    sec = rem2 % 60;
     
-    lcd.print(timediff);
-    //float tdiff_hrs;
-    //tdiff_hrs = float(timediff) / 3600;
+    if(days < 10){
+      lcd.print("0");
+    }
+      
+    lcd.print(days);
+    lcd.print(":");
+    lcd.print(hrs);
+    lcd.print(":");
+    lcd.print(mins);
+    lcd.print(":");
+    lcd.print(sec);
 
 }
