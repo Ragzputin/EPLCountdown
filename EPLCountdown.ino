@@ -26,6 +26,7 @@ int quoteFlag = 0;
 int datetimeFlag = 0;
 int recordFlag = 0;
 int countdownFlag = 0;
+int cstopFlag = 0;
 long days, hrs, mins, sec, rem1, rem2;
 int len = sizeof(msg) / sizeof(msg[0]);
 
@@ -115,14 +116,14 @@ void loop(){
     
   }
   
-  if(!client.connected()){
+  if(!client.connected() && cstopFlag == 0){
     delay(100);
     client.flush();
     client.stop();
     Serial.println();
     Serial.println("Disconnected.");
     Serial.println();
-    //while(1){}
+    cstopFlag = 1;
   }
   
   if(countdownFlag == 1){
@@ -209,12 +210,15 @@ void countdown(){
   }
   
   if(sec == 0){
+    lcd.setCursor(6,1);
     lcd.print(mins--);
     sec = 60;
   } else if(mins == 0){
+    lcd.setCursor(3,1);
     lcd.print(hrs--);
     mins = 59;
   } else if(hrs == 0){
+    lcd.setCursor(0,1);
     lcd.print(days--);
     hrs = 23;
   }
