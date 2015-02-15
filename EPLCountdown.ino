@@ -159,44 +159,72 @@ void checkAction(){
     timediff = gametime - current_time;
     Serial.println(timediff);
     
-    days = 2;//timediff / 86400;
-    rem1 = 0;//timediff % 86400;
-    hrs = 1;//rem1 / 3600;
-    rem2 = 0;//rem1 % 3600;
-    mins = 1;//rem2 / 60;
-    sec = 20;//rem2 % 60;
+    days = timediff / 86400;
+    rem1 = timediff % 86400;
+    hrs = rem1 / 3600;
+    rem2 = rem1 % 3600;
+    mins = rem2 / 60;
+    sec = rem2 % 60;
     
 }
 
 void countdown(){
-  lcd.setCursor(0,0);
+  lcd.setCursor(0,1);
   if(days < 10){
     lcd.print("0");
+    lcd.setCursor(1,1);
+    lcd.print(days);
+  }else{
+    lcd.print(days);
   }
     
-  lcd.print(days);
   lcd.print(":");
-  lcd.print(hrs);
+
+  if(hrs < 10){
+    lcd.setCursor(3,1);
+    lcd.print("0");
+    lcd.setCursor(4,1);
+    lcd.print(hrs);
+  }else{
+    lcd.print(hrs);
+  }
+
   lcd.print(":");
-  lcd.print(mins);
+  
+  if(mins < 10){
+    lcd.setCursor(6,1);
+    lcd.print("0");
+    lcd.setCursor(7,1);
+    lcd.print(mins);
+  } else {
+    lcd.print(mins);
+  }
+
   lcd.print(":");
-  lcd.print(sec--);
-  delay(1000);
   
   if(sec < 10){
-    lcd.setCursor(10,0);
-    lcd.print("-");
-    lcd.setCursor(0,0);
+    lcd.setCursor(9,1);
+    lcd.print("0");
+    lcd.setCursor(10,1);
+    lcd.print(sec);
+  } else {
+    lcd.print(sec);
   }
   
   if(sec == 0){
+    lcd.setCursor(6,1);
     lcd.print(mins--);
-    sec = 59;
+    sec = 60;
   } else if(mins == 0){
+    lcd.setCursor(3,1);
     lcd.print(hrs--);
     mins = 59;
   } else if(hrs == 0){
+    lcd.setCursor(0,1);
     lcd.print(days--);
     hrs = 23;
   }
+  
+  delay(1000);
+  sec--;
 }
