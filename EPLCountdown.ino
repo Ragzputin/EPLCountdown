@@ -42,6 +42,7 @@ void setup(){
   lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
   lcd.setBacklight(HIGH);
   lcd.home ();                   // go home
+  lcd.print("Loading...");
   
   //Begin WiFly and Serial
   WiFly.begin();
@@ -129,6 +130,9 @@ void loop(){
   }
   
   if(countdownFlag == 1){
+    lcd.setCursor(0,0);
+    lcd.print("dd:hh:mm:ss");
+    lcd.setBacklight(LOW);
     countdown();
   }
   
@@ -216,17 +220,14 @@ lcd.setCursor(0,1);
     lcd.print("Game begins now!");
     while(1){}
   } else if(sec == 0 && mins != 0){
-    lcd.setCursor(7,1);
-    lcd.print(mins--);
+    mins--;
     sec = 60;
   } else if(sec == 0 && mins == 0 && hrs != 0){
-    lcd.setCursor(4,1);
-    lcd.print(hrs--);
+    hrs--;
     mins = 59;
     sec = 60;
   } else if(sec == 0 && mins == 0 && hrs == 0 && days != 0){
-    lcd.setCursor(1,1);
-    lcd.print(days--);
+    days--;
     hrs = 23;
     mins = 59;
     sec = 60;
