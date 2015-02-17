@@ -219,9 +219,9 @@ lcd.setCursor(0,1);
   }
   
   if(sec == 0 && mins == 0 && hrs == 0 && days == 0){
-    lcd.setCursor(0,1);
+    lcd.setCursor(0,0);
     lcd.print("Game begins now!");
-    delay(60000);
+    delay(30000);
     resetFunc(); //call reset
   } else if(sec == 0 && mins != 0){
     mins--;
