@@ -1,3 +1,5 @@
+/*Reset testing branch */
+
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
@@ -27,6 +29,7 @@ int datetimeFlag = 0;
 int recordFlag = 0;
 int countdownFlag = 0;
 int cstopFlag = 0;
+void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
 int len = sizeof(msg) / sizeof(msg[0]);
 long days, hrs, mins, sec, rem1, rem2;
@@ -218,7 +221,8 @@ lcd.setCursor(0,1);
   if(sec == 0 && mins == 0 && hrs == 0 && days == 0){
     lcd.setCursor(0,1);
     lcd.print("Game begins now!");
-    while(1){}
+    delay(60000);
+    resetFunc(); //call reset
   } else if(sec == 0 && mins != 0){
     mins--;
     sec = 60;
