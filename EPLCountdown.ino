@@ -178,8 +178,11 @@ void countdown(){
   lcd_print(sec,9); //print seconds
   
   if(sec == 0 && mins == 0 && hrs == 0 && days == 0){
+    lcd.setBacklight(HIGH);
     lcd.setCursor(0,0);
     lcd.print("Game begins now!");
+    lcd.setCursor(0,1);
+    lcd.print("            ");
     delay(30000);
     resetFunc(); //call reset
   } else if(sec == 0 && mins != 0){
