@@ -1,3 +1,5 @@
+/*Removing spaghetti code branch */
+
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
@@ -49,12 +51,6 @@ void setup(){
   Serial.begin(9600);
   Serial.println("Serial begun :D");
   
-  if (!WiFly.join(ssid, passphrase)) {
-    Serial.println("Association failed.");
-    while (1) {
-      // Hang on failure.
-    }
-  } 
   current_time = WiFly.getTime();
   Serial.print("connecting to server...");
   if(client.connect()){
@@ -126,7 +122,7 @@ void loop(){
     Serial.println("Disconnected.");
     Serial.println();
     cstopFlag = 1;
-    //while(1){}
+
   }
   
   if(countdownFlag == 1){
@@ -173,47 +169,12 @@ void checkAction(){
 }
 
 void countdown(){
-lcd.setCursor(0,1);
-  if(days < 10){
-    lcd.print("0");
-    lcd.setCursor(1,1);
-    lcd.print(days);
-  } else{
-    lcd.print(days);
-  }
+  lcd.setCursor(0,1);
   
-  lcd.print(":");
-  
-  if(hrs < 10){
-    lcd.setCursor(3,1);
-    lcd.print("0");
-    lcd.setCursor(4,1);
-    lcd.print(hrs);
-  } else{
-    lcd.print(hrs);
-  }
-  
-  lcd.print(":");
-  
-  if(mins < 10){
-    lcd.setCursor(6,1);
-    lcd.print("0");
-    lcd.setCursor(7,1);
-    lcd.print(mins);
-  } else{
-    lcd.print(mins);
-  }
-  
-  lcd.print(":");
-  
-  if(sec < 10){
-    lcd.setCursor(9,1);
-    lcd.print("0");
-    lcd.setCursor(10,1);
-    lcd.print(sec);
-  } else{
-    lcd.print(sec);
-  }
+  lcd_print(days,0); //print days
+  lcd_print(hrs,3); //print hours
+  lcd_print(mins,6); //print minutes
+  lcd_print(sec,9); //print seconds
   
   if(sec == 0 && mins == 0 && hrs == 0 && days == 0){
     lcd.setCursor(0,1);
@@ -235,4 +196,18 @@ lcd.setCursor(0,1);
   
   delay(1000);
   sec--;
+}
+
+void lcd_print(long period, int col){
+  if(period < 10){
+    lcd.setCursor(col,1);
+    lcd.print("0");
+    lcd.setCursor(col+1,1);
+    lcd.print(period);
+  } else{
+    lcd.print(period);
+  }
+  if(col != 9){
+    lcd.print(":");
+  }
 }
