@@ -29,10 +29,12 @@ int datetimeFlag = 0;
 int recordFlag = 0;
 int countdownFlag = 0;
 int cstopFlag = 0;
+int lpcount = 0;
 void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
 int len = sizeof(msg) / sizeof(msg[0]);
 long days, hrs, mins, sec, rem1, rem2;
+long gametime, timediff, new_timediff;
 
 WiFlyClient client("api.football-data.org", 80);
 long current_time;
@@ -56,8 +58,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n5");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n5");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n15");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n15");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -143,30 +145,51 @@ void recordMessage(char message){
 
 void checkAction(){
     
-    TimeElements tm; //create a TimeElements variable
-                    //for conversion to time_t variable
     
-    //Fill in the elements of tm with those from the msg array
-    tm.Second = (msg[17] - '0')*10 + (msg[18] - '0');
-    tm.Minute = (msg[14] - '0')*10 + (msg[15] - '0');
-    tm.Hour = (msg[11] - '0')*10 + (msg[12] - '0');
-    tm.Day = (msg[8] - '0')*10 + (msg[9] - '0');
-    tm.Month = (msg[5] - '0')*10 + (msg[6] - '0');
-    tm.Year = ((msg[0] - '0')*1000 + (msg[1] - '0')*100 + (msg[2] - '0')*10 + (msg[3] - '0')) - 1970;
     
-    long gametime = makeTime(tm); //game time as time_t variable
-
-    long timediff; //time diff between current time and game time in the future
-    timediff = gametime - current_time;
-    Serial.println(timediff);
-    
-    days = timediff / 86400;
-    rem1 = timediff % 86400;
-    hrs = rem1 / 3600;
-    rem2 = rem1 % 3600;
-    mins = rem2 / 60;
-    sec = rem2 % 60;
-    
+    if(lpcount < 30){
+      TimeElements tm; //create a TimeElements variable
+                      //for conversion to time_t variable
+      
+      //Fill in the elements of tm with those from the msg array
+      tm.Second = (msg[17] - '0')*10 + (msg[18] - '0');
+      tm.Minute = (msg[14] - '0')*10 + (msg[15] - '0');
+      tm.Hour = (msg[11] - '0')*10 + (msg[12] - '0');
+      tm.Day = (msg[8] - '0')*10 + (msg[9] - '0');
+      tm.Month = (msg[5] - '0')*10 + (msg[6] - '0');
+      tm.Year = ((msg[0] - '0')*1000 + (msg[1] - '0')*100 + (msg[2] - '0')*10 + (msg[3] - '0')) - 1970;
+      
+      gametime = makeTime(tm); //game time as time_t variable
+  
+      timediff = gametime - current_time;
+      
+      days = timediff / 86400;
+      rem1 = timediff % 86400;
+      hrs = rem1 / 3600;
+      rem2 = rem1 % 3600;
+      mins = rem2 / 60;
+      sec = rem2 % 60;
+    } else if(lpcount == 30){
+      current_time = WiFly.getTime();
+      new_timediff = gametime - current_time;
+      if((new_timediff - timediff) != 0){
+        lpcount = 0;
+        lcd.setBacklight(HIGH);
+        lcd.clear();
+        lcd.print("Resetting...");
+        delay(1500);
+        
+        days = new_timediff / 86400;
+        rem1 = new_timediff % 86400;
+        hrs = rem1 / 3600;
+        rem2 = rem1 % 3600;
+        mins = rem2 / 60;
+        sec = rem2 % 60;
+        
+        lcd.clear();
+        lcd.setBacklight(LOW);
+      }
+    }
 }
 
 void countdown(){
@@ -187,6 +210,7 @@ void countdown(){
     resetFunc(); //call reset
   } else if(sec == 0 && mins != 0){
     mins--;
+    lpcount++;
     sec = 60;
   } else if(sec == 0 && mins == 0 && hrs != 0){
     hrs--;
@@ -197,6 +221,15 @@ void countdown(){
     hrs = 23;
     mins = 59;
     sec = 60;
+  }
+  
+  if(lpcount == 30){
+    checkAction();
+    lcd.setCursor(0,1);
+    lcd_print(days,0); //print days
+    lcd_print(hrs,3); //print hours
+    lcd_print(mins,6); //print minutes
+    lcd_print(sec,9); //print seconds
   }
   
   delay(1000);
