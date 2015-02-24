@@ -58,8 +58,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n15");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n15");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -129,6 +129,7 @@ void loop(){
   }
   
   if(countdownFlag == 1){
+    Serial.println("Entered countdown if");
     lcd.setCursor(0,0);
     lcd.print("dd:hh:mm:ss");
     lcd.setBacklight(LOW);
@@ -145,22 +146,12 @@ void recordMessage(char message){
 
 void checkAction(){
     
-    
-    
     if(lpcount < 30){
-      TimeElements tm; //create a TimeElements variable
-                      //for conversion to time_t variable
-      
-      //Fill in the elements of tm with those from the msg array
-      tm.Second = (msg[17] - '0')*10 + (msg[18] - '0');
-      tm.Minute = (msg[14] - '0')*10 + (msg[15] - '0');
-      tm.Hour = (msg[11] - '0')*10 + (msg[12] - '0');
-      tm.Day = (msg[8] - '0')*10 + (msg[9] - '0');
-      tm.Month = (msg[5] - '0')*10 + (msg[6] - '0');
-      tm.Year = ((msg[0] - '0')*1000 + (msg[1] - '0')*100 + (msg[2] - '0')*10 + (msg[3] - '0')) - 1970;
-      
-      gametime = makeTime(tm); //game time as time_t variable
-  
+      gametime_calc();
+      Serial.print("current time = ");
+      Serial.println(current_time);
+      Serial.print("gametime when lpcount < 2 =");
+      Serial.println(gametime);
       timediff = gametime - current_time;
       
       days = timediff / 86400;
@@ -170,10 +161,14 @@ void checkAction(){
       mins = rem2 / 60;
       sec = rem2 % 60;
     } else if(lpcount == 30){
+      lpcount = 0;
       current_time = WiFly.getTime();
+      gametime_calc();
+      Serial.println(gametime);
+      Serial.print("current time = ");
+      Serial.println(current_time);
       new_timediff = gametime - current_time;
       if((new_timediff - timediff) != 0){
-        lpcount = 0;
         lcd.setBacklight(HIGH);
         lcd.clear();
         lcd.print("Resetting...");
@@ -187,7 +182,6 @@ void checkAction(){
         sec = rem2 % 60;
         
         lcd.clear();
-        lcd.setBacklight(LOW);
       }
     }
 }
@@ -248,4 +242,19 @@ void lcd_print(long period, int col){
   if(col != 9){
     lcd.print(":");
   }
+}
+
+void gametime_calc(){
+  TimeElements tm; //create a TimeElements variable
+                      //for conversion to time_t variable
+    
+  //Fill in the elements of tm with those from the msg array
+  tm.Second = (msg[17] - '0')*10 + (msg[18] - '0');
+  tm.Minute = (msg[14] - '0')*10 + (msg[15] - '0');
+  tm.Hour = (msg[11] - '0')*10 + (msg[12] - '0');
+  tm.Day = (msg[8] - '0')*10 + (msg[9] - '0');
+  tm.Month = (msg[5] - '0')*10 + (msg[6] - '0');
+  tm.Year = ((msg[0] - '0')*1000 + (msg[1] - '0')*100 + (msg[2] - '0')*10 + (msg[3] - '0')) - 1970;
+  
+  gametime = makeTime(tm); //game time as time_t variable
 }
