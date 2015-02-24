@@ -58,8 +58,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -129,7 +129,6 @@ void loop(){
   }
   
   if(countdownFlag == 1){
-    Serial.println("Entered countdown if");
     lcd.setCursor(0,0);
     lcd.print("dd:hh:mm:ss");
     lcd.setBacklight(LOW);
@@ -150,7 +149,7 @@ void checkAction(){
       gametime_calc();
       Serial.print("current time = ");
       Serial.println(current_time);
-      Serial.print("gametime when lpcount < 2 =");
+      Serial.print("gametime when lpcount < 30 =");
       Serial.println(gametime);
       timediff = gametime - current_time;
       
