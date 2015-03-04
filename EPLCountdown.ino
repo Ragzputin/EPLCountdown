@@ -20,7 +20,8 @@
 
 LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 
-char msg[19];
+char msg[320];
+char * ptr = &msg[0];
 int letterCount = 0;
 int fixFlag = 0;
 int colonFlag = 0;
@@ -59,8 +60,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -76,13 +77,76 @@ void setup(){
 
 }
 
+int flag1 = 0;
+int flag2 = 0;
+int flag3 = 0;
+int flag4 = 0;
+int flag5 = 0;
+int flag6 = 0;
+char hmTeam[25];
+
 void loop(){
   
   if (client.available()) {
     char c = client.read();
     Serial.print(c);
     
-    recordMessage(c);
+    if(flag4 == 1 && letterCount < 321){
+      recordMessage(c);
+      flag5 = 1;
+    }
+    
+    if(c == '\n' && !client.available() && flag5 == 1){
+      
+      Serial.println("msg = ");
+      Serial.println(msg);
+      Serial.println();
+      char * ptr2; //declare a second pointer to change reference from start of msg string to start of "homeTeam" - i.e. "h"
+      int count = 0; //this is to count for hmTeam character array
+      int i;
+      for(i = 0; i < 321; i++){
+        if(*(ptr+i) == 'h' && *(ptr+i+4) == 'T' && *(ptr+i+7) == 'm'){ //once the sequence "h T m" is found, we know we have reached the word "homeTeam" in the string
+          ptr2 = ptr+i+11;
+          while(*ptr2 != '"'){
+            hmTeam[count] = *ptr2;
+            ptr2++;
+            count++;  
+          } 
+        }
+      }
+      Serial.print("hmTeam = ");
+      Serial.println(hmTeam);
+      
+      /*
+      if(*(ptr+222) == 'h' && *(ptr+226) == 'T' && *(ptr+229) == 'm'){
+        flag6 = 1;
+      }
+      */
+    }
+    
+    if(c == '{'){
+      flag1 = 1;
+    }
+    
+    if(flag1 == 1){
+      if(c == '"'){
+        flag2 = 1;
+      }
+    }
+    
+    if(flag2 == 1){
+      if(c == '_'){
+        flag3 = 1;
+      }
+    }
+    
+    if(flag3 == 1){
+      if(c == 'l'){
+        flag4 = 1;
+      }
+    }
+    
+    
     /*
     if(datetimeFlag == 1 && letterCount < len){
       
@@ -126,11 +190,11 @@ void loop(){
     client.flush();
     client.stop();
     Serial.println();
-    Serial.println(msg);
     Serial.println("Disconnected.");
     Serial.println();
     cstopFlag = 1;
   }
+  
   
   if(countdownFlag == 1){
     lcd.setCursor(0,0);
@@ -142,10 +206,9 @@ void loop(){
 }
 
 void recordMessage(char message){
-
   msg[letterCount] = message;
   letterCount++;
-  delay(10);
+
 }
 
 void checkAction(){
