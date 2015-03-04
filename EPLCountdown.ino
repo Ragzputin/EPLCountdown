@@ -29,6 +29,7 @@ int datetimeFlag = 0;
 int recordFlag = 0;
 int countdownFlag = 0;
 int cstopFlag = 0;
+int hTflag = 0;
 int lpcount = 0;
 void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
@@ -81,8 +82,10 @@ void loop(){
     char c = client.read();
     Serial.print(c);
     
+    recordMessage(c);
+    /*
     if(datetimeFlag == 1 && letterCount < len){
-      recordMessage(c);
+      
       if(letterCount == len){
         recordFlag = 1;
       }
@@ -92,6 +95,7 @@ void loop(){
       checkAction();
       countdownFlag = 1;
     }
+    
     
     if(c == '['){
       fixFlag = 1;
@@ -114,7 +118,7 @@ void loop(){
         datetimeFlag = 1;
       }
     }
-    
+    */
   }
   
   if(!client.connected() && cstopFlag == 0){
@@ -122,10 +126,10 @@ void loop(){
     client.flush();
     client.stop();
     Serial.println();
+    Serial.println(msg);
     Serial.println("Disconnected.");
     Serial.println();
     cstopFlag = 1;
-
   }
   
   if(countdownFlag == 1){
@@ -138,6 +142,7 @@ void loop(){
 }
 
 void recordMessage(char message){
+
   msg[letterCount] = message;
   letterCount++;
   delay(10);
