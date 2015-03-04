@@ -145,12 +145,8 @@ void recordMessage(char message){
 
 void checkAction(){
     
-    if(lpcount < 30){
+    if(lpcount < 60){
       gametime_calc();
-      Serial.print("current time = ");
-      Serial.println(current_time);
-      Serial.print("gametime when lpcount < 30 =");
-      Serial.println(gametime);
       timediff = gametime - current_time;
       
       days = timediff / 86400;
@@ -159,10 +155,11 @@ void checkAction(){
       rem2 = rem1 % 3600;
       mins = rem2 / 60;
       sec = rem2 % 60;
-    } else if(lpcount == 30){
+    } else if(lpcount == 60){
       lpcount = 0;
       current_time = WiFly.getTime();
-      gametime_calc();
+      Serial.println();
+      Serial.print("game time = ");
       Serial.println(gametime);
       Serial.print("current time = ");
       Serial.println(current_time);
@@ -216,7 +213,7 @@ void countdown(){
     sec = 60;
   }
   
-  if(lpcount == 30){
+  if(lpcount == 60){
     checkAction();
     lcd.setCursor(0,1);
     lcd_print(days,0); //print days
