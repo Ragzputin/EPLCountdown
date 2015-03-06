@@ -36,10 +36,19 @@ void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
 int len = sizeof(msg) / sizeof(msg[0]);
 long days, hrs, mins, sec, rem1, rem2;
-long gametime, timediff, new_timediff;
+long gametime, timediff, new_timediff, current_time;
+
+int flag1 = 0;
+int flag2 = 0;
+int flag3 = 0;
+int flag4 = 0;
+int flag5 = 0;
+int flag6 = 0;
+char hmTeam[25];
+char awTeam[25];
+char dateTime[25];
 
 WiFlyClient client("api.football-data.org", 80);
-long current_time;
 
 void setup(){
   
@@ -60,8 +69,8 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
+    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
     client.println(" HTTP/1.1");
     Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
@@ -77,13 +86,7 @@ void setup(){
 
 }
 
-int flag1 = 0;
-int flag2 = 0;
-int flag3 = 0;
-int flag4 = 0;
-int flag5 = 0;
-int flag6 = 0;
-char hmTeam[25];
+
 
 void loop(){
   
@@ -98,9 +101,6 @@ void loop(){
     
     if(c == '\n' && !client.available() && flag5 == 1){
       
-      Serial.println("msg = ");
-      Serial.println(msg);
-      Serial.println();
       char * ptr2; //declare a second pointer to change reference from start of msg string to start of "homeTeam" - i.e. "h"
       int count = 0; //this is to count for hmTeam character array
       int i;
@@ -113,15 +113,25 @@ void loop(){
             count++;  
           } 
         }
-      }
-      Serial.print("hmTeam = ");
-      Serial.println(hmTeam);
-      
-      /*
-      if(*(ptr+222) == 'h' && *(ptr+226) == 'T' && *(ptr+229) == 'm'){
-        flag6 = 1;
-      }
-      */
+        count = 0;
+        if(*(ptr+i) == 'a' && *(ptr+i+3) == 'y' && *(ptr+i+4) == 'T' && *(ptr+i+7) == 'm'){
+            ptr2 = ptr+i+11;
+            while(*ptr2 != '"'){
+              awTeam[count] = *ptr2;
+              ptr2++;
+              count++;  
+            } 
+        }
+        count = 0;
+        if(*(ptr+i) == 'd' && *(ptr+i+2) == 't' && *(ptr+i+3) == 'e'){
+            ptr2 = ptr+i+7;
+            while(*ptr2 != '"'){
+              dateTime[count] = *ptr2;
+              ptr2++;
+              count++;  
+            } 
+        }
+      }     
     }
     
     if(c == '{'){
@@ -146,43 +156,6 @@ void loop(){
       }
     }
     
-    
-    /*
-    if(datetimeFlag == 1 && letterCount < len){
-      
-      if(letterCount == len){
-        recordFlag = 1;
-      }
-    }
-    
-    if(c == '\n' && !client.available() && recordFlag == 1){
-      checkAction();
-      countdownFlag = 1;
-    }
-    
-    
-    if(c == '['){
-      fixFlag = 1;
-    }
-    
-    if(fixFlag == 1){
-      if(c == 'e'){
-        colonFlag = 1;
-      }
-    }
-    
-    if(colonFlag == 1){
-      if(c == ':'){
-        quoteFlag = 1;
-      }
-    }
-    
-    if(quoteFlag == 1){
-      if(c == '"'){
-        datetimeFlag = 1;
-      }
-    }
-    */
   }
   
   if(!client.connected() && cstopFlag == 0){
@@ -192,14 +165,21 @@ void loop(){
     Serial.println();
     Serial.println("Disconnected.");
     Serial.println();
+    delay(500);
+    checkAction();
+    countdownFlag = 1;
     cstopFlag = 1;
   }
   
   
   if(countdownFlag == 1){
+    Serial.println("Entered countdownFlag");
+    delay(500);
     lcd.setCursor(0,0);
-    lcd.print("dd:hh:mm:ss");
     lcd.setBacklight(LOW);
+    //teamNamePrint(hmTeam);
+    //lcd.print(" vs ");
+    //teamNamePrint(awTeam);
     countdown();
   }
   
@@ -208,15 +188,67 @@ void loop(){
 void recordMessage(char message){
   msg[letterCount] = message;
   letterCount++;
+}
+
+/*
+void teamNamePrint(){
+    char team[25];
+    strcpy(team,hmTeam);
+    if(team == "Arsenal FC")
+      lcd.print("Arsenal");
+    else if (team == "Aston Villa FC")
+      lcd.print("AVFC");
+    else if (team =="Burnley FC")
+      lcd.print("Burnley");
+    else if (team =="Chelsea FC")
+      lcd.print("Chelsea");
+    else if (team =="Crystal Palace FC")
+      lcd.print("CPFC");
+    else if (team =="Everton FC")
+      lcd.print("Everton");
+    else if (team =="Hull City")
+      lcd.print("Hull");
+    else if (team =="Leiceter City FC")
+      lcd.print("Lcity");
+    else if (team =="Liverpool FC")
+      lcd.print("Lpool");
+    else if (team =="Manchester City FC")
+      lcd.print("ManCity");
+    else if (team =="Manchester United")
+      lcd.print("ManU");
+    else if (team =="Newcastle FC")
+      lcd.print("NCFC");
+    else if (team =="Queens Park Rangers")
+      lcd.print("QPR");
+    else if (team =="FC Southampton")
+      lcd.print("Sthtn");
+    else if (team =="Stoke FC")
+      lcd.print("Stoke");
+    else if (team =="Sunderland FC")
+      lcd.print("Sndlnd");
+    else if (team =="Swansea FC")
+      lcd.print("SwnFC");
+    else if (team =="Tottenham Hotspur")
+      lcd.print("Spurs");
+    else if (team =="West Bromwich Albion")
+      lcd.print("WBrom");     
+    else if (team =="West Ham Utd")
+      lcd.print("WHU");
 
 }
+*/
 
 void checkAction(){
     
     if(lpcount < 60){
+      Serial.println("Entered lpcount < 60");
+      delay(500);
       gametime_calc();
       timediff = gametime - current_time;
-      
+      Serial.print("timediff = ");
+      delay(500);
+      Serial.println(timediff);
+      delay(500);
       days = timediff / 86400;
       rem1 = timediff % 86400;
       hrs = rem1 / 3600;
@@ -251,6 +283,8 @@ void checkAction(){
 }
 
 void countdown(){
+  Serial.println("Entered the countdown");
+  delay(500);
   lcd.setCursor(0,1);
   
   lcd_print(days,0); //print days
@@ -309,16 +343,20 @@ void lcd_print(long period, int col){
 }
 
 void gametime_calc(){
+  Serial.println(dateTime);
+  delay(500);
   TimeElements tm; //create a TimeElements variable
                       //for conversion to time_t variable
     
   //Fill in the elements of tm with those from the msg array
-  tm.Second = (msg[17] - '0')*10 + (msg[18] - '0');
-  tm.Minute = (msg[14] - '0')*10 + (msg[15] - '0');
-  tm.Hour = (msg[11] - '0')*10 + (msg[12] - '0');
-  tm.Day = (msg[8] - '0')*10 + (msg[9] - '0');
-  tm.Month = (msg[5] - '0')*10 + (msg[6] - '0');
-  tm.Year = ((msg[0] - '0')*1000 + (msg[1] - '0')*100 + (msg[2] - '0')*10 + (msg[3] - '0')) - 1970;
+  tm.Second = (dateTime[17] - '0')*10 + (dateTime[18] - '0');
+  tm.Minute = (dateTime[14] - '0')*10 + (dateTime[15] - '0');
+  tm.Hour = (dateTime[11] - '0')*10 + (dateTime[12] - '0');
+  tm.Day = (dateTime[8] - '0')*10 + (dateTime[9] - '0');
+  tm.Month = (dateTime[5] - '0')*10 + (dateTime[6] - '0');
+  tm.Year = ((dateTime[0] - '0')*1000 + (dateTime[1] - '0')*100 + (dateTime[2] - '0')*10 + (dateTime[3] - '0')) - 1970;
   
   gametime = makeTime(tm); //game time as time_t variable
+  Serial.println(gametime);
+  delay(500);
 }
