@@ -1,6 +1,3 @@
-/*merged results*/
-
-#include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -23,18 +20,11 @@ LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin)
 char msg[320];
 char * ptr = &msg[0];
 int letterCount = 0;
-int fixFlag = 0;
-int colonFlag = 0;
-int quoteFlag = 0;
-int datetimeFlag = 0;
-int recordFlag = 0;
 int countdownFlag = 0;
 int cstopFlag = 0;
-int hTflag = 0;
 int lpcount = 0;
 void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
-int len = sizeof(msg) / sizeof(msg[0]);
 long days, hrs, mins, sec, rem1, rem2;
 long gametime, timediff, new_timediff, current_time;
 
@@ -44,6 +34,7 @@ int flag3 = 0;
 int flag4 = 0;
 int flag5 = 0;
 int flag6 = 0;
+int flag7 = 0;
 char hmTeam[25];
 char awTeam[25];
 char dateTime[25];
@@ -70,23 +61,16 @@ void setup(){
   if(client.connect()){
     Serial.println("connected");
     client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
-    Serial.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
     client.println(" HTTP/1.1");
-    Serial.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
-    Serial.println("Host: api.football-data.org");
-    client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5");
-    Serial.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5");  
+    client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
     client.println("Connection: close");
-    Serial.println("Connection: close");
     client.println();
   } else{
     Serial.println("connection failed");
   }
 
 }
-
-
 
 void loop(){
   
@@ -131,7 +115,8 @@ void loop(){
               count++;  
             } 
         }
-      }     
+      }
+  
     }
     
     if(c == '{'){
@@ -164,19 +149,20 @@ void loop(){
     client.stop();
     Serial.println();
     Serial.println("Disconnected.");
-    Serial.println();
     delay(500);
-    checkAction();
-    countdownFlag = 1;
+    Serial.println();
     cstopFlag = 1;
+    flag7 = 1;
   }
   
+  if(flag7 == 1){
+    checkAction();
+    countdownFlag = 1;
+  }
   
   if(countdownFlag == 1){
-    Serial.println("Entered countdownFlag");
-    delay(500);
-    lcd.setCursor(0,0);
-    lcd.setBacklight(LOW);
+    //lcd.setCursor(0,0);
+    //lcd.setBacklight(LOW);
     //teamNamePrint(hmTeam);
     //lcd.print(" vs ");
     //teamNamePrint(awTeam);
@@ -239,16 +225,9 @@ void teamNamePrint(){
 */
 
 void checkAction(){
-    
     if(lpcount < 60){
-      Serial.println("Entered lpcount < 60");
-      delay(500);
       gametime_calc();
       timediff = gametime - current_time;
-      Serial.print("timediff = ");
-      delay(500);
-      Serial.println(timediff);
-      delay(500);
       days = timediff / 86400;
       rem1 = timediff % 86400;
       hrs = rem1 / 3600;
@@ -258,11 +237,6 @@ void checkAction(){
     } else if(lpcount == 60){
       lpcount = 0;
       current_time = WiFly.getTime();
-      Serial.println();
-      Serial.print("game time = ");
-      Serial.println(gametime);
-      Serial.print("current time = ");
-      Serial.println(current_time);
       new_timediff = gametime - current_time;
       if((new_timediff - timediff) != 0){
         lcd.setBacklight(HIGH);
@@ -280,11 +254,11 @@ void checkAction(){
         lcd.clear();
       }
     }
+
 }
 
 void countdown(){
-  Serial.println("Entered the countdown");
-  delay(500);
+  
   lcd.setCursor(0,1);
   
   lcd_print(days,0); //print days
@@ -343,8 +317,6 @@ void lcd_print(long period, int col){
 }
 
 void gametime_calc(){
-  Serial.println(dateTime);
-  delay(500);
   TimeElements tm; //create a TimeElements variable
                       //for conversion to time_t variable
     
@@ -357,6 +329,4 @@ void gametime_calc(){
   tm.Year = ((dateTime[0] - '0')*1000 + (dateTime[1] - '0')*100 + (dateTime[2] - '0')*10 + (dateTime[3] - '0')) - 1970;
   
   gametime = makeTime(tm); //game time as time_t variable
-  Serial.println(gametime);
-  delay(500);
 }
