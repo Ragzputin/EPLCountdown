@@ -73,7 +73,7 @@ void setup(){
 }
 
 void loop(){
-  
+
   if (client.available()) {
     char c = client.read();
     Serial.print(c);
@@ -155,16 +155,18 @@ void loop(){
     flag7 = 1;
   }
   
-  if(flag7 == 1){
+  if(flag7 == 1 && !client.available()){
     checkAction();
     countdownFlag = 1;
+    flag7 = 0;
   }
   
   if(countdownFlag == 1){
-    //lcd.setCursor(0,0);
+    lcd.clear();
+    lcd.setCursor(0,0);
     //lcd.setBacklight(LOW);
     //teamNamePrint(hmTeam);
-    //lcd.print(" vs ");
+    lcd.print(" vs ");
     //teamNamePrint(awTeam);
     countdown();
   }
@@ -260,7 +262,7 @@ void checkAction(){
 void countdown(){
   
   lcd.setCursor(0,1);
-  
+
   lcd_print(days,0); //print days
   lcd_print(hrs,3); //print hours
   lcd_print(mins,6); //print minutes
