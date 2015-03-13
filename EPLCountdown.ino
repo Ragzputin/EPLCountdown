@@ -58,7 +58,7 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
+    client.print("GET http://api.football-data.org/teams/58/fixtures/?timeFrame=n7");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -187,54 +187,49 @@ void recordMessage(char message){
 void teamNamePrint(char * teamName, int length){
   int i;
   for(i = 0; i < length; i++){
-    if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'h' && *(teamName + i + 2) == 'e'){
+    
+    if(*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'A' && *(teamName + i + 4) == 'r')
+      lcd.print("ARS");
+    else if(*(teamName + i) == 'A' && *(teamName + i + 1) == 's' && *(teamName + i + 2) == 't')
+      lcd.print("AST");
+    else if(*(teamName + i) == 'B' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'r')
+      lcd.print("BUR");
+    else if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'r' && *(teamName + i + 2) == 'y')
+      lcd.print("CRP");
+    else if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'h' && *(teamName + i + 2) == 'e')
       lcd.print("CHE");
-    } else if (*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'S' && *(teamName + i + 4) == 'o'){
-      lcd.print("SOU");
-    }
-  }
-  /*
-    if(hmTeam == "Arsenal FC")
-      lcd.print("Arsenal");
-    else if (hmTeam == "Aston Villa FC")
-      lcd.print("AVFC");
-    else if (hmTeam == "Burnley FC")
-      lcd.print("Burnley");
-    else if (hmTeam =="Chelsea FC")
-      lcd.print("Chelsea");
-    else if (hmTeam == "Crystal Palace FC")
-      lcd.print("CPFC");
-    else if (hmTeam == "Everton FC")
-      lcd.print("Everton");
-    else if (hmTeam == "Hull City")
-      lcd.print("Hull");
-    else if (hmTeam == "Leiceter City FC")
-      lcd.print("Lcity");
-    else if (hmTeam == "Liverpool FC")
-      lcd.print("Lpool");
-    else if (hmTeam == "Manchester City FC")
-      lcd.print("ManCity");
-    else if (hmTeam == "Manchester United")
-      lcd.print("ManU");
-    else if (hmTeam == "Newcastle FC")
-      lcd.print("NCFC");
-    else if (hmTeam == "Queens Park Rangers")
+    else if(*(teamName + i) == 'E' && *(teamName + i + 1) == 'v' && *(teamName + i + 2) == 'e')
+      lcd.print("EVR");
+    else if(*(teamName + i) == 'H' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'l')
+      lcd.print("HUL");
+    else if(*(teamName + i) == 'L' && *(teamName + i + 1) == 'e' && *(teamName + i + 2) == 'i')
+      lcd.print("LEIC");
+    else if(*(teamName + i) == 'L' && *(teamName + i + 1) == 'i' && *(teamName + i + 2) == 'v')
+      lcd.print("LIV");
+    else if(*(teamName + i) == 'M' && *(teamName + i + 1) == 'a' && *(teamName + i + 2) == 'n' && *(teamName + i + 11) == 'C')
+      lcd.print("MCITY");
+    else if(*(teamName + i) == 'M' && *(teamName + i + 1) == 'a' && *(teamName + i + 2) == 'n' && *(teamName + i + 11) == 'U')
+      lcd.print("MANU");
+    else if(*(teamName + i) == 'N' && *(teamName + i + 1) == 'e' && *(teamName + i + 2) == 'w')
+      lcd.print("NEW");
+    else if(*(teamName + i) == 'Q' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'e')
       lcd.print("QPR");
-    else if (hmTeam == "FC Southampton")
-      lcd.print("Sthtn");
-    else if (hmTeam == "Stoke FC")
-      lcd.print("Stoke");
-    else if (hmTeam == "Sunderland FC")
-      lcd.print("Sndlnd");
-    else if (hmTeam == "Swansea FC")
-      lcd.print("SwnFC");
-    else if (hmTeam == "Tottenham Hotspur")
-      lcd.print("Spurs");
-    else if (hmTeam == "West Bromwich Albion")
-      lcd.print("WBrom");     
-    else if (hmTeam == "West Ham Utd")
+    else if (*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'S' && *(teamName + i + 4) == 'o')
+      lcd.print("SOU");
+    else if(*(teamName + i) == 'S' && *(teamName + i + 1) == 't' && *(teamName + i + 2) == 'o')
+      lcd.print("STK");
+    else if(*(teamName + i) == 'S' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'n')
+      lcd.print("SUND");
+    else if(*(teamName + i) == 'S' && *(teamName + i + 1) == 'w' && *(teamName + i + 2) == 'a')
+      lcd.print("SWA");
+    else if(*(teamName + i) == 'T' && *(teamName + i + 1) == 'o' && *(teamName + i + 2) == 't')
+      lcd.print("SPURS");
+    else if(*(teamName + i) == 'W' && *(teamName + i + 1) == 'e' && *(teamName + i + 2) == 's' && *(teamName + i + 5) == 'B')
+      lcd.print("WBA");
+    else if(*(teamName + i) == 'W' && *(teamName + i + 1) == 'e' && *(teamName + i + 2) == 's' && *(teamName + i + 5) == 'H')
       lcd.print("WHU");
-   */
+    
+  }
 }
 
 
