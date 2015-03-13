@@ -33,8 +33,6 @@ int flag2 = 0;
 int flag3 = 0;
 int flag4 = 0;
 int flag5 = 0;
-int flag6 = 0;
-int flag7 = 0;
 char hmTeam[25];
 char awTeam[25];
 char dateTime[25];
@@ -60,7 +58,7 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n20");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n7");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -78,17 +76,28 @@ void loop(){
     char c = client.read();
     Serial.print(c);
     
-    if(flag4 == 1 && letterCount < 321){
+    if(flag3 == 1 && letterCount < 320){
       recordMessage(c);
-      flag5 = 1;
+      if(letterCount == 320){
+        flag4 = 1;
+      }
     }
     
-    if(c == '\n' && !client.available() && flag5 == 1){
+    if(c == '\n' && !client.available() && flag4 == 1){
       
       char * ptr2; //declare a second pointer to change reference from start of msg string to start of "homeTeam" - i.e. "h"
       int count = 0; //this is to count for hmTeam character array
       int i;
       for(i = 0; i < 321; i++){
+        if(*(ptr+i) == 'd' && *(ptr+i+1) == 'a' && *(ptr+i+2) == 't' && *(ptr+i+3) == 'e'){
+            ptr2 = ptr+i+7;
+            while(*ptr2 != '"'){
+              dateTime[count] = *ptr2;
+              ptr2++;
+              count++;  
+            } 
+        }
+        count = 0;
         if(*(ptr+i) == 'h' && *(ptr+i+4) == 'T' && *(ptr+i+7) == 'm'){ //once the sequence "h T m" is found, we know we have reached the word "homeTeam" in the string
           ptr2 = ptr+i+11;
           while(*ptr2 != '"'){
@@ -106,17 +115,12 @@ void loop(){
               count++;  
             } 
         }
-        count = 0;
-        if(*(ptr+i) == 'd' && *(ptr+i+2) == 't' && *(ptr+i+3) == 'e'){
-            ptr2 = ptr+i+7;
-            while(*ptr2 != '"'){
-              dateTime[count] = *ptr2;
-              ptr2++;
-              count++;  
-            } 
-        }
+
       }
-  
+      Serial.println(dateTime); 
+      Serial.println(hmTeam);
+      Serial.println(awTeam);
+           
     }
     
     if(c == '{'){
@@ -135,12 +139,6 @@ void loop(){
       }
     }
     
-    if(flag3 == 1){
-      if(c == 'l'){
-        flag4 = 1;
-      }
-    }
-    
   }
   
   if(!client.connected() && cstopFlag == 0){
@@ -152,22 +150,28 @@ void loop(){
     delay(500);
     Serial.println();
     cstopFlag = 1;
-    flag7 = 1;
+    flag5 = 1;
   }
   
-  if(flag7 == 1 && !client.available()){
+  if(flag5 == 1 && !client.available()){
     checkAction();
     countdownFlag = 1;
-    flag7 = 0;
+    flag5 = 0;
   }
   
   if(countdownFlag == 1){
+    char * tmNameh = &hmTeam[0];
+    char * tmNamea = &awTeam[0];
+    int lenh = sizeof(hmTeam)/sizeof(hmTeam[0]);
+    int lena = sizeof(awTeam)/sizeof(awTeam[0]);
     lcd.clear();
     lcd.setCursor(0,0);
-    //lcd.setBacklight(LOW);
-    //teamNamePrint(hmTeam);
-    lcd.print(" vs ");
-    //teamNamePrint(awTeam);
+    //lcd.print(hmTeam);
+    
+    teamNamePrint(tmNameh, lenh);
+    lcd.print(" v ");
+    teamNamePrint(tmNamea, lena);
+    lcd.setBacklight(LOW);
     countdown();
   }
   
@@ -176,55 +180,63 @@ void loop(){
 void recordMessage(char message){
   msg[letterCount] = message;
   letterCount++;
+  delay(1);
 }
 
-/*
-void teamNamePrint(){
-    char team[25];
-    strcpy(team,hmTeam);
-    if(team == "Arsenal FC")
+
+void teamNamePrint(char * teamName, int length){
+  int i;
+  for(i = 0; i < length; i++){
+    if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'h' && *(teamName + i + 2) == 'e'){
+      lcd.print("CHE");
+    } else if (*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'S' && *(teamName + i + 4) == 'o'){
+      lcd.print("SOU");
+    }
+  }
+  /*
+    if(hmTeam == "Arsenal FC")
       lcd.print("Arsenal");
-    else if (team == "Aston Villa FC")
+    else if (hmTeam == "Aston Villa FC")
       lcd.print("AVFC");
-    else if (team =="Burnley FC")
+    else if (hmTeam == "Burnley FC")
       lcd.print("Burnley");
-    else if (team =="Chelsea FC")
+    else if (hmTeam =="Chelsea FC")
       lcd.print("Chelsea");
-    else if (team =="Crystal Palace FC")
+    else if (hmTeam == "Crystal Palace FC")
       lcd.print("CPFC");
-    else if (team =="Everton FC")
+    else if (hmTeam == "Everton FC")
       lcd.print("Everton");
-    else if (team =="Hull City")
+    else if (hmTeam == "Hull City")
       lcd.print("Hull");
-    else if (team =="Leiceter City FC")
+    else if (hmTeam == "Leiceter City FC")
       lcd.print("Lcity");
-    else if (team =="Liverpool FC")
+    else if (hmTeam == "Liverpool FC")
       lcd.print("Lpool");
-    else if (team =="Manchester City FC")
+    else if (hmTeam == "Manchester City FC")
       lcd.print("ManCity");
-    else if (team =="Manchester United")
+    else if (hmTeam == "Manchester United")
       lcd.print("ManU");
-    else if (team =="Newcastle FC")
+    else if (hmTeam == "Newcastle FC")
       lcd.print("NCFC");
-    else if (team =="Queens Park Rangers")
+    else if (hmTeam == "Queens Park Rangers")
       lcd.print("QPR");
-    else if (team =="FC Southampton")
+    else if (hmTeam == "FC Southampton")
       lcd.print("Sthtn");
-    else if (team =="Stoke FC")
+    else if (hmTeam == "Stoke FC")
       lcd.print("Stoke");
-    else if (team =="Sunderland FC")
+    else if (hmTeam == "Sunderland FC")
       lcd.print("Sndlnd");
-    else if (team =="Swansea FC")
+    else if (hmTeam == "Swansea FC")
       lcd.print("SwnFC");
-    else if (team =="Tottenham Hotspur")
+    else if (hmTeam == "Tottenham Hotspur")
       lcd.print("Spurs");
-    else if (team =="West Bromwich Albion")
+    else if (hmTeam == "West Bromwich Albion")
       lcd.print("WBrom");     
-    else if (team =="West Ham Utd")
+    else if (hmTeam == "West Ham Utd")
       lcd.print("WHU");
-
+   */
 }
-*/
+
 
 void checkAction(){
     if(lpcount < 60){
@@ -256,7 +268,6 @@ void checkAction(){
         lcd.clear();
       }
     }
-
 }
 
 void countdown(){
@@ -305,6 +316,7 @@ void countdown(){
 }
 
 void lcd_print(long period, int col){
+
   if(period < 10){
     lcd.setCursor(col,1);
     lcd.print("0");
