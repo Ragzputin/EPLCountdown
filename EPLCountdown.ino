@@ -58,7 +58,7 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/58/fixtures/?timeFrame=n7");
+    client.print("GET http://api.football-data.org/teams/563/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -141,6 +141,7 @@ void loop(){
     
   }
   
+  
   if(!client.connected() && cstopFlag == 0){
     delay(100);
     client.flush();
@@ -154,25 +155,34 @@ void loop(){
   }
   
   if(flag5 == 1 && !client.available()){
-    checkAction();
+    computeTimes();
     countdownFlag = 1;
     flag5 = 0;
   }
   
   if(countdownFlag == 1){
+    //initialize pointers to the start of homeTeam and awayTeam strings
+    //and the lengths of these two strings respectively
     char * tmNameh = &hmTeam[0];
     char * tmNamea = &awTeam[0];
     int lenh = sizeof(hmTeam)/sizeof(hmTeam[0]);
     int lena = sizeof(awTeam)/sizeof(awTeam[0]);
+    
+
     lcd.clear();
     lcd.setCursor(0,0);
-    //lcd.print(hmTeam);
-    
     teamNamePrint(tmNameh, lenh);
     lcd.print(" v ");
     teamNamePrint(tmNamea, lena);
     lcd.setBacklight(LOW);
-    countdown();
+    if(timediff > 0){
+      countdown();
+    } else {
+      lcd.setCursor(0,1);
+      lcd.print("Game Done!");
+      countdownFlag = 0;
+    }
+
   }
   
 }
@@ -187,11 +197,11 @@ void recordMessage(char message){
 void teamNamePrint(char * teamName, int length){
   int i;
   for(i = 0; i < length; i++){
-    
+    //Here we look up the team's full name given in the HTTP response and print out the short name to the LCD screen
     if(*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'A' && *(teamName + i + 4) == 'r')
       lcd.print("ARS");
     else if(*(teamName + i) == 'A' && *(teamName + i + 1) == 's' && *(teamName + i + 2) == 't')
-      lcd.print("AST");
+      lcd.print("AVFC");
     else if(*(teamName + i) == 'B' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'r')
       lcd.print("BUR");
     else if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'r' && *(teamName + i + 2) == 'y')
@@ -233,8 +243,8 @@ void teamNamePrint(char * teamName, int length){
 }
 
 
-void checkAction(){
-    if(lpcount < 60){
+void computeTimes(){
+    if(lpcount < 60 && timediff > 0){
       gametime_calc();
       timediff = gametime - current_time;
       days = timediff / 86400;
@@ -243,7 +253,7 @@ void checkAction(){
       rem2 = rem1 % 3600;
       mins = rem2 / 60;
       sec = rem2 % 60;
-    } else if(lpcount == 60){
+    } else if(lpcount == 60 && timediff > 0){
       lpcount = 0;
       current_time = WiFly.getTime();
       new_timediff = gametime - current_time;
