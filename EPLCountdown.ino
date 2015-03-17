@@ -17,8 +17,9 @@
 
 LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 
-char msg[320];
+char msg[500];
 char * ptr = &msg[0];
+char * ptr2; //declare a second pointer to change reference from start of msg string to start of date i.e. "d"
 int letterCount = 0;
 int countdownFlag = 0;
 int cstopFlag = 0;
@@ -67,7 +68,7 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
+    client.print("GET http://api.football-data.org/teams/57/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -85,7 +86,7 @@ void loop(){
     char c = client.read();
     Serial.print(c);
     
-    if(flag3 == 1 && letterCount < 320){
+    if(flag3 == 1 && letterCount < 500){
       recordMessage(c);
       //if(letterCount == 320){
         flag4 = 1;
@@ -149,11 +150,23 @@ void recordMessage(char message){
 }
 
 void HttpResponseParsing(){
+  pointerLogic();
+  if(not_EPL == 1){
+    ptr = ptr2;
+    not_EPL = 0;
+    pointerLogic();
+  }
+    
+  Serial.println(dateTime); 
+  Serial.println(hmTeam);
+  Serial.println(awTeam);
+  //Serial.println(msg);
+}
 
-  char * ptr2; //declare a second pointer to change reference from start of msg string to start of date i.e. "d"
+void pointerLogic(){
   int count = 0; //this is to count for hmTeam character array
   int i;
-  for(i = 0; i < 321; i++){
+  for(i = 0; i < 501; i++){
     if(*(ptr+i) == 'd' && *(ptr+i+1) == 'a' && *(ptr+i+2) == 't' && *(ptr+i+3) == 'e'){
         ptr2 = ptr+i+7;
         while(*ptr2 != '"'){
@@ -189,12 +202,9 @@ void HttpResponseParsing(){
           teamNamePrint(tmNamea, lenh);
           awayTeamflag = 0;
         }
+        break;
     }
-
   }
-  Serial.println(dateTime); 
-  Serial.println(hmTeam);
-  Serial.println(awTeam);
 }
 
 void teamNamePrint(char * teamName, int length){
@@ -264,7 +274,8 @@ void teamNamePrint(char * teamName, int length){
       break;
     } else{
       lcd.print("No EPL games");
-      lcd.setBacklight(LOW);
+      lcd.setCursor(0,1);
+      lcd.print("Searching...");
       not_EPL = 1;
       break;
     }
