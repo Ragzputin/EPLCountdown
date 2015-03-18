@@ -68,7 +68,7 @@ void setup(){
   Serial.print("connecting to server...");
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/57/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
+    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -218,7 +218,7 @@ void teamNamePrint(char * teamName, int length){
     }else if(*(teamName + i) == 'A' && *(teamName + i + 1) == 's' && *(teamName + i + 2) == 't'){
       lcd.print("AVFC");
       break;
-    }else if(*(teamName + i) == 'B' && *(teamName + i + 1) == 'u' && *(teamName + i + 2) == 'r'){
+    }else if(*(teamName + i) == 'F' && *(teamName + i + 1) == 'C' && *(teamName + i + 3) == 'B' && *(teamName + i + 4) == 'u'){
       lcd.print("BUR");
       break;
     }else if(*(teamName + i) == 'C' && *(teamName + i + 1) == 'r' && *(teamName + i + 2) == 'y'){
