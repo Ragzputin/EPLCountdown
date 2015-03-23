@@ -37,6 +37,7 @@ int flag5 = 0;
 int homeTeamflag = 0;
 int awayTeamflag = 0;
 int not_EPL = 0;
+int game_state = 0;
 char hmTeam[25];
 char awTeam[25];
 char dateTime[25];
@@ -66,9 +67,10 @@ void setup(){
   
   
   Serial.print("connecting to server...");
+  current_time = WiFly.getTime();
   if(client.connect()){
     Serial.println("connected");
-    client.print("GET http://api.football-data.org/teams/61/fixtures/?timeFrame=n8"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
+    client.print("GET http://api.football-data.org/teams/65/fixtures/?timeFrame=n16"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
     client.println(" HTTP/1.1");
     client.println("Host: api.football-data.org");
     client.println("X-Auth-Token: 4f02cc524412487989ee61aed27503d5"); 
@@ -88,9 +90,7 @@ void loop(){
     
     if(flag3 == 1 && letterCount < 500){
       recordMessage(c);
-      //if(letterCount == 320){
-        flag4 = 1;
-      //}
+      flag4 = 1;
     }
     
     if(c == '\n' && !client.available() && flag4 == 1){
@@ -128,10 +128,14 @@ void loop(){
     flag5 = 1;
   }
   
-  if(flag5 == 1 && !client.available()){
-    current_time = WiFly.getTime();
+  if(flag5 == 1 && !client.available()){ 
     computeTimes();
-    countdownFlag = 1;
+    if(current_time > (gametime + 8000)){ //if the current game has already passed, we need to look for the next game.
+                                          //7800 seconds is the average length of a football game (2h10m)
+      game_state = 1;
+    } else {
+      countdownFlag = 1;
+    }
     flag5 = 0;
   }
   
@@ -139,6 +143,35 @@ void loop(){
     lcd.setCursor(0,1);
     lcd.setBacklight(LOW);
     countdown();
+    if(lpcount == 60){
+      computeTimes();
+    }
+  }
+  
+  //if countdown has been completed, attempt countdown
+  //to next game.
+  if(game_state == 1){
+    //clear arrays to all 0s
+    clearArrays(dateTime);
+    clearArrays(hmTeam);
+    clearArrays(awTeam);
+    HttpResponseParsing();
+    /*
+    Serial.print("dateTime=");
+    Serial.println(dateTime);
+    Serial.print("hmTeam=");
+    Serial.println(hmTeam);
+    Serial.print("awTeam=");
+    Serial.println(awTeam);
+    */
+    flag5 = 1;
+    
+    if(dateTime[0] == '0'){
+      lcd.print("No games for");
+      lcd.setCursor(0,1);
+      lcd.print("next 15 days");
+    }
+    game_state = 0;
   }
   
 }
@@ -150,17 +183,16 @@ void recordMessage(char message){
 }
 
 void HttpResponseParsing(){
-  pointerLogic();
-  if(not_EPL == 1){
+  
+  if(not_EPL == 1 || game_state == 1){
     ptr = ptr2;
     not_EPL = 0;
+    game_state = 0;
+    pointerLogic();
+  } else {
     pointerLogic();
   }
-    
-  Serial.println(dateTime); 
-  Serial.println(hmTeam);
-  Serial.println(awTeam);
-  //Serial.println(msg);
+
 }
 
 void pointerLogic(){
@@ -205,6 +237,16 @@ void pointerLogic(){
         break;
     }
   }
+  
+}
+
+void clearArrays(char * array_val){
+  //used to clear array to all 0s
+  while(*array_val != '\0'){
+    *array_val = '0';
+    array_val++;
+  }
+
 }
 
 void teamNamePrint(char * teamName, int length){
@@ -273,9 +315,7 @@ void teamNamePrint(char * teamName, int length){
       lcd.print("WHU");
       break;
     } else{
-      lcd.print("No EPL games");
-      lcd.setCursor(0,1);
-      lcd.print("Searching...");
+      lcd.print("N/A");
       not_EPL = 1;
       break;
     }
@@ -285,7 +325,6 @@ void teamNamePrint(char * teamName, int length){
     lcd.print(" v ");
   }
 }
-
 
 void computeTimes(){
     if(lpcount < 60){
@@ -306,6 +345,7 @@ void computeTimes(){
         lcd.clear();
         lcd.print("Resetting...");
         delay(1500);
+        HttpResponseParsing();
         
         days = new_timediff / 86400;
         rem1 = new_timediff % 86400;
@@ -313,8 +353,6 @@ void computeTimes(){
         rem2 = rem1 % 3600;
         mins = rem2 / 60;
         sec = rem2 % 60;
-        
-        lcd.clear();
       }
     }
 }
@@ -335,7 +373,10 @@ void countdown(){
     lcd.setCursor(0,0);
     lcd.print("Game begins now!");
     delay(60000);
-    resetFunc(); //call reset
+    lcd.clear();
+    countdownFlag = 0;
+    game_state = 1;
+    //resetFunc(); //call reset
   } else if(sec == 0 && mins != 0){
     mins--;
     lpcount++;
@@ -350,6 +391,7 @@ void countdown(){
     mins = 59;
     sec = 60;
   }
+    
   
   if(lpcount == 60){
     computeTimes();
