@@ -26,7 +26,7 @@ int cstopFlag = 0;
 int lpcount = 0;
 void(* resetFunc)(void) = 0; //pointer to reset function @ address 0
 
-long days, hrs, mins, sec, rem1, rem2;
+long rem1, rem2, days, hrs, mins, sec;
 long gametime, timediff, new_timediff, current_time;
 
 int flag1 = 0;
@@ -67,7 +67,6 @@ void setup(){
   
   
   Serial.print("connecting to server...");
-  current_time = WiFly.getTime();
   if(client.connect()){
     Serial.println("connected");
     client.print("GET http://api.football-data.org/teams/65/fixtures/?timeFrame=n16"); //"GET http://api.football-data.org/alpha/soccerseasons/354/leagueTable");
@@ -129,9 +128,14 @@ void loop(){
   }
   
   if(flag5 == 1 && !client.available()){ 
+    current_time = WiFly.getTime();
+    if(current_time < 1400000000){ //to remove glitch which shows huge value for dd in dd:hh:mm:ss
+      resetFunc(); //call reset
+      delay(10000);
+    }
     computeTimes();
     if(current_time > (gametime + 8000)){ //if the current game has already passed, we need to look for the next game.
-                                          //7800 seconds is the average length of a football game (2h10m)
+                                          //7800-8000 seconds is the average length of a football game (2h10m)
       game_state = 1;
     } else {
       countdownFlag = 1;
@@ -141,7 +145,7 @@ void loop(){
   
   if(countdownFlag == 1 && not_EPL != 1){
     lcd.setCursor(0,1);
-    lcd.setBacklight(LOW);
+    //lcd.setBacklight(LOW);
     countdown();
     if(lpcount == 60){
       computeTimes();
@@ -376,7 +380,7 @@ void countdown(){
     lcd.clear();
     countdownFlag = 0;
     game_state = 1;
-    //resetFunc(); //call reset
+    
   } else if(sec == 0 && mins != 0){
     mins--;
     lpcount++;
